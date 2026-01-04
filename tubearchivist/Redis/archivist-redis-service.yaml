@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: archivist-redis
+  namespace: tubearchivist
+spec:
+  clusterIP: None
+  ports:
+    - name: "6379"
+      port: 6379
+      targetPort: 6379
+  selector:
+    app: archivist-redis

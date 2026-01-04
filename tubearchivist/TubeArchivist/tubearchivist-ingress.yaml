@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tubearchivist-ingress
+  namespace: tubearchivist
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: tubearchivist.internal
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: tubearchivist
+            port:
+              number: 8000

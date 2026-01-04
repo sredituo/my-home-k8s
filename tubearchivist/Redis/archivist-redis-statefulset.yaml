@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: archivist-redis
+  name: archivist-redis
+  namespace: tubearchivist
+spec:
+  replicas: 1
+  serviceName: archivist-redis
+  selector:
+    matchLabels:
+      app: archivist-redis
+  template:
+    metadata:
+      labels:
+        app: archivist-redis
+    spec:
+      containers:
+        - image: redis
+          name: archivist-redis
+          ports:
+            - containerPort: 6379
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /data
+              name: redis
+      restartPolicy: Always
+  volumeClaimTemplates:
+    - metadata:
+        name: redis
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: nfs-rwx
+        resources:
+          requests:
+            storage: 30Gi

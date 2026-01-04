@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media
+  namespace: tubearchivist
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs-rwx
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cache
+  namespace: tubearchivist
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs-rwx
+  resources:
+    requests:
+      storage: 1Gi

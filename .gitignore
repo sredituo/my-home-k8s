@@ -1,0 +1,5 @@
+# Kubernetes Secrets
+tubearchivist/TubeArchivist/tubearchivist-secrets.yaml
+
+# NFS configuration (contains internal IP addresses)
+nfs/

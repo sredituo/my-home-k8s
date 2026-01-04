@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: archivist-es
+  name: archivist-es
+  namespace: tubearchivist
+spec:
+  replicas: 1
+  serviceName: archivist-es
+  selector:
+    matchLabels:
+      app: archivist-es
+  template:
+    metadata:
+      labels:
+        app: archivist-es
+    spec:
+      containers:
+        - env:
+            - name: ELASTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tubearchivist-secrets
+                  key: elastic-password
+            - name: ES_JAVA_OPTS
+              value: -Xms1g -Xmx1g
+            - name: discovery.type
+              value: single-node
+            - name: path.repo
+              value: /usr/share/elasticsearch/data/snapshot
+            - name: xpack.security.enabled
+              value: "true"
+          image: bbilly1/tubearchivist-es
+          name: archivist-es
+          ports:
+            - containerPort: 9200
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /usr/share/elasticsearch/data
+              name: es
+      restartPolicy: Always
+  volumeClaimTemplates:
+    - metadata:
+        name: es
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: nfs-rwx
+        resources:
+          requests:
+            storage: 30Gi

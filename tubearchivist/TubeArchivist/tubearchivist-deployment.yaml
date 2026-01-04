@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: tubearchivist
+  name: tubearchivist
+  namespace: tubearchivist
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tubearchivist
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: tubearchivist
+    spec:
+      containers:
+        - env:
+            - name: ELASTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tubearchivist-secrets
+                  key: elastic-password
+            - name: ES_URL
+              value: http://archivist-es:9200
+            - name: HOST_GID
+              value: "1000"
+            - name: HOST_UID
+              value: "1000"
+            - name: REDIS_CON
+              value: redis://archivist-redis:6379
+            - name: TA_HOST
+              value: http://tubearchivist.internal:8000
+            - name: TA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tubearchivist-secrets
+                  key: ta-password
+            - name: TA_USERNAME
+              value: tubearchivist
+            - name: TZ
+              value: Asia/Tokyo
+          image: bbilly1/tubearchivist
+          livenessProbe:
+            exec:
+              command:
+                - curl
+                - -f
+                - http://localhost:8000/api/health/
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 120
+            timeoutSeconds: 10
+          name: tubearchivist
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /youtube
+              name: media
+            - mountPath: /cache
+              name: cache
+      restartPolicy: Always
+      volumes:
+        - name: media
+          persistentVolumeClaim:
+            claimName: media
+        - name: cache
+          persistentVolumeClaim:
+            claimName: cache
