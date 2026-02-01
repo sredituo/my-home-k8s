@@ -20,6 +20,9 @@ spec:
       containers:
         - image: deluan/navidrome:latest
           name: navidrome
+          env:
+            - name: ND_BaseURL
+              value: "https://navidrome.internal"
           ports:
             - containerPort: 4533
               protocol: TCP
