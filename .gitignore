@@ -3,3 +3,4 @@ ta2music/ta2music-secrets.yaml
 infra-diagram.drawio
 k8s-diagram.drawio
 nfs/
+monitoring/
