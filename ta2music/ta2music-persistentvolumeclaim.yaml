@@ -1,0 +1,13 @@
+# SQLiteデータ用のPVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ta2music-data
+  namespace: ta2music
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs-rwx
+  resources:
+    requests:
+      storage: 1Gi

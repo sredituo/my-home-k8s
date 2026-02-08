@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ta2music
+  name: ta2music
+  namespace: ta2music
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ta2music
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: ta2music
+    spec:
+      containers:
+      - name: ta2music
+        image: ghcr.io/sredituo/ta2music:latest
+        env:
+        - name: TUBEARCHIVIST_DIR
+          value: "/youtube"
+        - name: NAVIDROME_DIR
+          value: "/music"
+        - name: DB_FILE
+          value: "/app/data/mp3_downloaded.db"
+        - name: TA_API_URL
+          value: "http://tubearchivist:8000"
+        - name: TA_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: tubearchivist-api-token
+              key: token
+        - name: TZ
+          value: Asia/Tokyo
+        volumeMounts:
+        - name: tubearchivist-media
+          mountPath: /youtube
+          readOnly: true
+        - name: navidrome-music
+          mountPath: /music
+        - name: data
+          mountPath: /app/data
+        - name: logs
+          mountPath: /app/logs
+      restartPolicy: Always
+      volumes:
+      - name: tubearchivist-media
+        nfs:
+          server: 192.168.10.9
+          path: /exports/k8s/tubearchivist-media-pvc-c62e2b73-a5ac-43b4-8e25-c37301618e5b
+          readOnly: true
+      - name: navidrome-music
+        nfs:
+          server: 192.168.10.9
+          path: /exports/k8s/navidrome-navidrome-music-pvc-06962925-21e9-4a34-a78b-81ef3ffd26b0
+      - name: data
+        persistentVolumeClaim:
+          claimName: ta2music-data
+      - name: logs
+        emptyDir: {}
+

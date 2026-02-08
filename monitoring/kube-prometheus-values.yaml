@@ -1,0 +1,99 @@
+grafana:
+  adminPassword: admin
+
+  # Loki データソースを追加
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      url: http://loki.monitoring.svc.cluster.local:3100
+      access: proxy
+      isDefault: false
+      uid: loki
+
+  # アラート設定
+  alerting:
+    # 通知先（Discord Webhook）
+    contactpoints.yaml:
+      apiVersion: 1
+      contactPoints:
+        - orgId: 1
+          name: discord
+          receivers:
+            - uid: discord-webhook
+              type: discord
+              settings:
+                url: "https://discord.com/api/webhooks/1469702300028108835/10smB08qpTLl87ggn4t6wlCvYdCpDsdeZjv4_5zs0HqbzQtv8czw3KSplNQfdXDL5tFf"
+                use_discord_username: true
+                message: |
+                  {{ range .Alerts }}
+                  **{{ .Labels.alertname }}** ({{ .Status }})
+                  {{ .Annotations.summary }}
+                  {{ .Annotations.description }}
+                  📋 **ログ確認**: {{ .Annotations.explore_url }}
+                  {{ end }}
+
+    # 通知ポリシー（すべてのアラートをDiscordに送る）
+    notification-policies.yaml:
+      apiVersion: 1
+      policies:
+        - orgId: 1
+          receiver: discord
+          group_by:
+            - grafana_folder
+            - alertname
+
+    # アラートルール（ta2musicのWARN/ERRORログ検知）
+    rules.yaml:
+      apiVersion: 1
+      groups:
+        - orgId: 1
+          name: ta2music-alerts
+          folder: ta2music
+          interval: 1m
+          rules:
+            - uid: ta2music-warn-error
+              title: "ta2music WARN/ERROR ログ検出"
+              condition: B
+              data:
+                # A: Lokiクエリ - 過去5分間のWARN/ERRORログ件数
+                - refId: A
+                  relativeTimeRange:
+                    from: 300
+                    to: 0
+                  datasourceUid: loki
+                  model:
+                    expr: 'count_over_time({namespace="ta2music", container="ta2music"} |~ `(WARNING|ERROR)` [5m])'
+                    queryType: range
+                # B: 閾値判定 - 1件以上でアラート発火
+                - refId: B
+                  relativeTimeRange:
+                    from: 300
+                    to: 0
+                  datasourceUid: __expr__
+                  model:
+                    type: reduce
+                    expression: A
+                    reducer: last
+                - refId: C
+                  relativeTimeRange:
+                    from: 300
+                    to: 0
+                  datasourceUid: __expr__
+                  model:
+                    type: threshold
+                    expression: B
+                    conditions:
+                      - evaluator:
+                          type: gt
+                          params:
+                            - 0
+              condition: C
+              for: 0m
+              labels:
+                severity: warning
+                app: ta2music
+              annotations:
+                summary: "ta2music で WARN/ERROR レベルのログが検出されました"
+                description: "ta2music アプリケーションで WARN または ERROR レベルのログが過去5分間に出力されました。"
+                explore_url: 'http://localhost:3000/explore?schemaVersion=1&panes=%7B%22a%22%3A%7B%22datasource%22%3A%22loki%22%2C%22queries%22%3A%5B%7B%22refId%22%3A%22A%22%2C%22expr%22%3A%22%7Bnamespace%3D%5C%22ta2music%5C%22%2C+container%3D%5C%22ta2music%5C%22%7D+%7C%3D+%60WARNING%60+or+%60ERROR%60%22%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22now-15m%22%2C%22to%22%3A%22now%22%7D%7D%7D'
+

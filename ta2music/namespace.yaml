@@ -1,0 +1,7 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: ta2music
+  labels:
+    name: ta2music
+

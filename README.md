@@ -11,6 +11,9 @@ Infrastructure Services
 - Kubernetes
     - containerd
     - Flannel
+    - Prometheus
+    - Grafana
+    - Loki
 
 Applications
 - [TubeArchivist](https://www.tubearchivist.com/)
@@ -18,6 +21,6 @@ Applications
     - Mobile Client: [Substreamer](https://apps.apple.com/jp/app/substreamer/id1012991665)
 - [ta2music](https://github.com/sredituo/ta2music)
 
-![infra-diagram](./infra-diagram.png)
-
 ![k8s-diagram](./k8s-diagram.png)
+
+![infra-diagram](./infra-diagram.png)

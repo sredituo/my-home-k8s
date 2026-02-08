@@ -1,5 +1,5 @@
-# Kubernetes Secrets
 tubearchivist/TubeArchivist/tubearchivist-secrets.yaml
-
-# NFS configuration (contains internal IP addresses)
+ta2music/ta2music-secrets.yaml
+infra-diagram.drawio
+k8s-diagram.drawio
 nfs/
